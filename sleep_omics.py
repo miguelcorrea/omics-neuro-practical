@@ -15,6 +15,7 @@ __generated_with = "0.25.1"
 app = marimo.App(
     width="medium",
     app_title="Sleep deprivation RNA-seq practical",
+    css_file="theme.css",
 )
 
 
@@ -75,14 +76,18 @@ def _():
 
 @app.cell(hide_code=True)
 def _(alt):
-    # Colours follow meaning, never rank: condition (sleep vs sleep-deprived) and
-    # direction of change (up vs down) keep the same colour throughout.
-    C_SLEEP, C_SD = "#2a78d6", "#eb6834"
-    C_UP, C_DOWN, C_NS = "#e34948", "#2a78d6", "#bdbcb6"
-    C_TRUE, C_NULL = "#eb6834", "#a9a8a2"
-    C_HIGHLIGHT = "#4a3aa7"
-    DAY_COLORS = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4"]
-    INK, INK_MUTED, GRID = "#52514e", "#6f6e69", "#e3e2dd"
+    # Colour scheme: sleep = indigo (night), sleep-deprived = amber (day). Colours follow
+    # meaning, never rank. Each categorical pair was checked for colour-blind separation;
+    # page fonts and heading colours are set in theme.css.
+    C_SLEEP, C_SD = "#4a4fb0", "#b87800"
+    C_UP, C_DOWN, C_NS = "#c9302c", "#2b6cb0", "#cbd5e1"
+    C_TRUE, C_NULL = "#178f80", "#94a3b8"
+    C_WT, C_MUT = "#178f80", "#9c4fb0"
+    C_HIGHLIGHT, C_ACCENT = "#178f80", "#4a4fb0"
+    DAY_COLORS = ["#0072B2", "#E69F00", "#009E73", "#CC79A7", "#56B4E9"]  # Okabe-Ito; days are also labelled
+    SEQ_RANGE = ["#e0e3ff", "#2e3192"]  # sequential (light to dark indigo)
+    INK, INK_MUTED, INK_STRONG = "#334155", "#64748b", "#1e293b"
+    GRID, AXIS = "#e2e8f0", "#cbd5e1"
 
     COND_SCALE = alt.Scale(domain=["Sleep", "Sleep-deprived"], range=[C_SLEEP, C_SD])
     GROUP_ORDER = ["WT | Sleep", "WT | Sleep-deprived", "Shank3 | Sleep", "Shank3 | Sleep-deprived"]
@@ -90,10 +95,11 @@ def _(alt):
     def style(chart):
         """Recessive axes and grid, readable labels, legend on top."""
         return (
-            chart.configure_axis(
+            chart.configure(font="IBM Plex Sans")  # same typeface as the page (theme.css)
+            .configure_axis(
                 gridColor=GRID,
-                domainColor="#c3c2b7",
-                tickColor="#c3c2b7",
+                domainColor=AXIS,
+                tickColor=AXIS,
                 labelColor=INK,
                 titleColor=INK,
                 labelFontSize=12,
@@ -107,15 +113,21 @@ def _(alt):
 
     return (
         COND_SCALE,
+        C_ACCENT,
         C_DOWN,
         C_HIGHLIGHT,
+        C_MUT,
         C_NS,
         C_NULL,
         C_SD,
         C_TRUE,
         C_UP,
+        C_WT,
         DAY_COLORS,
         GROUP_ORDER,
+        INK_MUTED,
+        INK_STRONG,
+        SEQ_RANGE,
         style,
     )
 
@@ -203,7 +215,18 @@ def _(np, stats):
 
 
 @app.cell(hide_code=True)
-def _(COND_SCALE, GROUP_ORDER, alt, counts, cpm, logcpm, np, samples, symbol):
+def _(
+    alt,
+    COND_SCALE,
+    counts,
+    cpm,
+    GROUP_ORDER,
+    INK_STRONG,
+    logcpm,
+    np,
+    samples,
+    symbol,
+):
     def gene_dotplot(entrez, scale="log2 CPM", title_extra=""):
         """One dot per mouse, grouped by genotype x condition, with group means."""
         _source = {"Raw counts": counts, "CPM": cpm, "log2 CPM": logcpm}[scale]
@@ -219,7 +242,7 @@ def _(COND_SCALE, GROUP_ORDER, alt, counts, cpm, logcpm, np, samples, symbol):
             color=alt.Color("condition:N", scale=COND_SCALE, title="Condition"),
             tooltip=["sample", "genotype", "condition", "day", alt.Tooltip("value:Q", format=",.2f", title=scale)],
         )
-        _mean = _base.mark_tick(color="#3a3936", thickness=2, size=36).encode(y="mean(value):Q", tooltip=[alt.Tooltip("mean(value):Q", format=",.2f", title="group mean")])
+        _mean = _base.mark_tick(color=INK_STRONG, thickness=2, size=36).encode(y="mean(value):Q", tooltip=[alt.Tooltip("mean(value):Q", format=",.2f", title="group mean")])
         return (_pts + _mean).properties(
             width=520, height=260, title=alt.TitleParams(f"{symbol.get(entrez, entrez)}{title_extra}", subtitle="Each dot is one mouse; the black bar is the group mean")
         )
@@ -445,11 +468,12 @@ def _(bh, np, sim_effect, sim_genes, sim_n, sim_rerun, sim_true, ttest_rows):
 
 @app.cell(hide_code=True)
 def _(
+    alt,
     C_NULL,
     C_TRUE,
-    alt,
     control_groups,
     fmt,
+    INK_STRONG,
     mo,
     np,
     pd,
@@ -486,7 +510,7 @@ def _(
         order=alt.Order("truth:N", sort="descending"),
         tooltip=["truth", "genes", alt.Tooltip("bin:Q", title="p from")],
     )
-    _flat = alt.Chart(pd.DataFrame({"y": [_null_level]})).mark_rule(strokeDash=[4, 4], color="#3a3936").encode(y="y:Q")
+    _flat = alt.Chart(pd.DataFrame({"y": [_null_level]})).mark_rule(strokeDash=[4, 4], color=INK_STRONG).encode(y="y:Q")
     _hist_chart = (_chart + _flat).properties(
         width=430, height=230, title=alt.TitleParams("Distribution of p-values", subtitle="Dashed line: the level expected from genes with no real change")
     )
@@ -634,9 +658,10 @@ def _(
 
 @app.cell(hide_code=True)
 def _(
-    C_NULL,
     alt,
+    C_NULL,
     fmt,
+    INK_STRONG,
     mo,
     np,
     pd,
@@ -663,7 +688,7 @@ def _(
             tooltip=["genes", alt.Tooltip("bin:Q", title="p from")],
         )
     )
-    _flat = alt.Chart(pd.DataFrame({"y": [len(real_p) / 20]})).mark_rule(strokeDash=[4, 4], color="#3a3936").encode(y="y:Q")
+    _flat = alt.Chart(pd.DataFrame({"y": [len(real_p) / 20]})).mark_rule(strokeDash=[4, 4], color=INK_STRONG).encode(y="y:Q")
     _title = real_contrast.selected_key + (", shuffled labels" if real_shuffle.value else "")
     _plot = (_chart + _flat).properties(width=430, height=230, title=alt.TitleParams(_title, subtitle="Dashed line: the level expected if nothing changes"))
     _groups = pd.DataFrame(real_groups, columns=["mouse", "assigned to"])
@@ -856,16 +881,17 @@ def _(de_all, de_contrast, de_fdr, de_lfc, de_minexpr, de_model, genes, np):
 
 @app.cell(hide_code=True)
 def _(
+    alt,
     C_DOWN,
     C_HIGHLIGHT,
     C_NS,
     C_UP,
-    alt,
     de,
     de_fdr,
     de_find,
     de_labels,
     de_lfc,
+    INK_STRONG,
     markers,
     mo,
     np,
@@ -901,14 +927,14 @@ def _(
         )
         .add_params(_pick)
     )
-    _hline = alt.Chart(pd.DataFrame({"y": [-np.log10(de_fdr.value)]})).mark_rule(strokeDash=[4, 4], color="#3a3936").encode(y="y:Q")
+    _hline = alt.Chart(pd.DataFrame({"y": [-np.log10(de_fdr.value)]})).mark_rule(strokeDash=[4, 4], color=INK_STRONG).encode(y="y:Q")
     _layers = [_pts, _hline]
     if de_lfc.value > 0:
-        _layers.append(alt.Chart(pd.DataFrame({"x": [-de_lfc.value, de_lfc.value]})).mark_rule(strokeDash=[4, 4], color="#3a3936").encode(x="x:Q"))
+        _layers.append(alt.Chart(pd.DataFrame({"x": [-de_lfc.value, de_lfc.value]})).mark_rule(strokeDash=[4, 4], color=INK_STRONG).encode(x="x:Q"))
     if de_labels.value:  # only markers that made it into the list, to limit clutter
         _m = _d[_d["symbol"].isin(markers["symbol"]) & (_d["call"] != "Not selected")]
-        _layers.append(alt.Chart(_m).mark_point(shape="circle", size=60, filled=False, color="#0b0b0b", strokeWidth=1.2).encode(x="log2FC:Q", y="y:Q", tooltip=_tip))
-        _layers.append(alt.Chart(_m).mark_text(align="left", dx=6, dy=-6, fontSize=11, color="#0b0b0b").encode(x="log2FC:Q", y="y:Q", text="symbol:N"))
+        _layers.append(alt.Chart(_m).mark_point(shape="circle", size=60, filled=False, color=INK_STRONG, strokeWidth=1.2).encode(x="log2FC:Q", y="y:Q", tooltip=_tip))
+        _layers.append(alt.Chart(_m).mark_text(align="left", dx=6, dy=-6, fontSize=11, color=INK_STRONG).encode(x="log2FC:Q", y="y:Q", text="symbol:N"))
     if de_find.value:
         _f = _d[_d["symbol"] == de_find.value]
         _layers.append(alt.Chart(_f).mark_point(shape="circle", size=220, filled=False, color=C_HIGHLIGHT, strokeWidth=2.5).encode(x="log2FC:Q", y="y:Q", tooltip=_tip))
@@ -1088,7 +1114,18 @@ def _(bh, control_groups, fmt, logcpm, mo, np, samples, ttest_rows):
 
 
 @app.cell(hide_code=True)
-def _(C_SD, alt, mo, np, pd, power_curve, reps_n, style):
+def _(
+    alt,
+    C_ACCENT,
+    C_NULL,
+    INK_STRONG,
+    mo,
+    np,
+    pd,
+    power_curve,
+    reps_n,
+    style,
+):
     _d = pd.DataFrame(power_curve, columns=["mice per group", "genes found"])
     _d["chosen"] = _d["mice per group"] == reps_n.value
     # Spread the repeats sideways so dots with the same value (e.g. 0 genes) stay visible.
@@ -1100,11 +1137,11 @@ def _(C_SD, alt, mo, np, pd, power_curve, reps_n, style):
             x=alt.X("mice per group:O", axis=alt.Axis(labelAngle=0)),
             xOffset=alt.XOffset("jitter:Q", scale=alt.Scale(domain=[-1, 1])),
             y=alt.Y("genes found:Q", title="Genes found (FDR < 0.05)"),
-            color=alt.condition("datum.chosen", alt.value(C_SD), alt.value("#a9a8a2")),
+            color=alt.condition("datum.chosen", alt.value(C_ACCENT), alt.value(C_NULL)),
             tooltip=["mice per group", "genes found"],
         )
     )
-    _mean = alt.Chart(_d).mark_line(color="#3a3936", strokeWidth=2).encode(x="mice per group:O", y="mean(genes found):Q")
+    _mean = alt.Chart(_d).mark_line(color=INK_STRONG, strokeWidth=2).encode(x="mice per group:O", y="mean(genes found):Q")
     _sub = _d[_d["chosen"]]["genes found"]
     mo.vstack(
         [
@@ -1255,15 +1292,16 @@ def _(
     alt,
     de_settings,
     fmt,
-    go_N,
     go_direction,
     go_fdr,
+    go_N,
     go_n_list,
     go_random,
     go_res,
     go_top,
     mo,
     np,
+    SEQ_RANGE,
     style,
 ):
     _sig = go_res[go_res["q"] < go_fdr.value]
@@ -1287,7 +1325,7 @@ def _(
                 y=alt.Y("label:N", sort=alt.EncodingSortField("q", order="ascending"), title=None, axis=alt.Axis(labelLimit=380)),
                 x=alt.X("fold_enrichment:Q", title="Fold enrichment (observed / expected)", scale=alt.Scale(zero=True)),
                 size=alt.Size("in_list:Q", title="Genes in list", scale=alt.Scale(range=[40, 400])),
-                color=alt.Color("neglog10_q:Q", title="−log10(q)", scale=alt.Scale(range=["#cde2fb", "#104281"])),
+                color=alt.Color("neglog10_q:Q", title="−log10(q)", scale=alt.Scale(range=SEQ_RANGE)),
                 opacity=alt.condition(f"datum.q < {go_fdr.value}", alt.value(1.0), alt.value(0.35)),
                 tooltip=["term_id", "name", "in_list", "term_size", alt.Tooltip("fold_enrichment:Q", format=".2f"), alt.Tooltip("q:Q", format=".2e")],
             )
@@ -1537,10 +1575,14 @@ def _(
 
 @app.cell(hide_code=True)
 def _(
-    COND_SCALE,
-    C_SD,
-    DAY_COLORS,
     alt,
+    C_ACCENT,
+    C_MUT,
+    C_WT,
+    COND_SCALE,
+    DAY_COLORS,
+    INK_MUTED,
+    INK_STRONG,
     mo,
     pca_color,
     pca_loadings,
@@ -1551,6 +1593,7 @@ def _(
     pca_y,
     pd,
     r2_by,
+    SEQ_RANGE,
     style,
     symbol,
 ):
@@ -1562,9 +1605,9 @@ def _(
     _yl = f"{pca_y.value} ({pca_pct[int(pca_y.value[2:]) - 1]:.0f}% of variance)"
     _color = {
         "condition": alt.Color("condition:N", scale=COND_SCALE, title="Condition"),
-        "genotype": alt.Color("genotype:N", scale=alt.Scale(domain=["WT", "Shank3"], range=["#1baf7a", "#4a3aa7"]), title="Genotype"),
+        "genotype": alt.Color("genotype:N", scale=alt.Scale(domain=["WT", "Shank3"], range=[C_WT, C_MUT]), title="Genotype"),
         "day": alt.Color("day:N", scale=alt.Scale(domain=[f"Day {i}" for i in range(1, 6)], range=DAY_COLORS), title="Experiment day"),
-        "library size": alt.Color("library size:Q", scale=alt.Scale(range=["#cde2fb", "#104281"]), title="Million reads"),
+        "library size": alt.Color("library size:Q", scale=alt.Scale(range=SEQ_RANGE), title="Million reads"),
     }[pca_color.value]
     _shape = alt.Shape("genotype:N", scale=alt.Scale(domain=["WT", "Shank3"], range=["circle", "triangle-up"]), title="Genotype")
     _base = alt.Chart(_d).encode(x=alt.X(f"{pca_x.value}:Q", title=_xl), y=alt.Y(f"{pca_y.value}:Q", title=_yl))
@@ -1573,12 +1616,12 @@ def _(
     )
     _layers = [_pts]
     if pca_color.value == "day":  # secondary encoding: day written next to each dot
-        _layers.append(_base.mark_text(dx=9, dy=-8, fontSize=10, color="#3a3936").encode(text="day_label:N"))
+        _layers.append(_base.mark_text(dx=9, dy=-8, fontSize=10, color=INK_STRONG).encode(text="day_label:N"))
     _scatter = alt.layer(*_layers).properties(width=440, height=360, title=alt.TitleParams("PCA of the mice", subtitle="Each point is one mouse; triangles are Shank3 mutants"))
 
     _scree = (
         alt.Chart(pd.DataFrame({"PC": [f"PC{i + 1}" for i in range(len(pca_pct))], "pct": pca_pct}))
-        .mark_bar(color="#2a78d6", cornerRadiusTopLeft=4, cornerRadiusTopRight=4)
+        .mark_bar(color=C_ACCENT, cornerRadiusTopLeft=4, cornerRadiusTopRight=4)
         .encode(x=alt.X("PC:N", sort=None, axis=alt.Axis(labelAngle=0), title=None), y=alt.Y("pct:Q", title="% of variance"), tooltip=["PC", alt.Tooltip("pct:Q", format=".1f")])
         .properties(width=300, height=150, title="Variance captured by each PC")
     )
@@ -1587,7 +1630,7 @@ def _(
     _ldf = pd.DataFrame({"gene": [symbol.get(g, g) for g in _top], "loading": _ld.loc[_top].to_numpy()})
     _load = (
         alt.Chart(_ldf)
-        .mark_bar(color=C_SD, cornerRadius=3)
+        .mark_bar(color=INK_MUTED, cornerRadius=3)
         .encode(y=alt.Y("gene:N", sort=alt.EncodingSortField("loading", op="sum", order="descending"), title=None), x=alt.X("loading:Q", title=f"Weight on {pca_x.value}"), tooltip=["gene", alt.Tooltip("loading:Q", format=".3f")])
         .properties(width=300, height=170, title=f"Genes with the largest weights on {pca_x.value}")
     )
@@ -1684,6 +1727,8 @@ def _(control_groups, mo):
 @app.cell(hide_code=True)
 def _(
     alt,
+    C_MUT,
+    C_WT,
     logcpm,
     mo,
     np,
@@ -1714,7 +1759,7 @@ def _(
                 .encode(
                     x=alt.X("PC1:Q", title=f"PC1 ({pct[0]:.0f}%)"),
                     y=alt.Y("PC2:Q", title=f"PC2 ({pct[1]:.0f}%)"),
-                    color=alt.Color("random_group:N", scale=alt.Scale(domain=["A", "B"], range=["#1baf7a", "#4a3aa7"]), title="Random group"),
+                    color=alt.Color("random_group:N", scale=alt.Scale(domain=["A", "B"], range=[C_WT, C_MUT]), title="Random group"),
                     shape=alt.Shape("random_group:N", scale=alt.Scale(domain=["A", "B"], range=["circle", "square"]), title="Random group"),
                     tooltip=["sample", "random_group"],
                 )

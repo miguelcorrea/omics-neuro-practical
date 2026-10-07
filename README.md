@@ -49,9 +49,12 @@ directly from disk does not work.
 ```
 prepare_data.py   instructor-only data build (GEO → clean tables, PyDESeq2, GO sets)
 sleep_omics.py    the marimo notebook (students see the app view, code hidden)
+theme.css         page fonts (IBM Plex, embedded) and heading/link colours; chart colours
+                  are set in the palette cell near the top of sleep_omics.py
 public/           small data files the notebook loads (~5 MB, committed)
   samples.csv  genes.csv.gz  counts.csv.gz  de_results.csv.gz
   go_terms.csv.gz  marker_genes.csv  data_versions.txt
+  fonts/OFL.txt   licence for the IBM Plex fonts embedded in theme.css
 worksheet.md      printable student question sheet
 data_raw/         download cache (git-ignored)
 site/             built web version (git-ignored; built by CI)
