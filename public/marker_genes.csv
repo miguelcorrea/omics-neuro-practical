@@ -1,0 +1,16 @@
+symbol,note,entrez
+Arc,Activity-regulated gene; rises with wakefulness,11838
+Fos,Classic immediate-early gene (neuronal activity),14281
+Egr1,Immediate-early transcription factor,13653
+Nr4a1,Immediate-early nuclear receptor,15370
+Homer1,Synaptic scaffold; short isoform Homer1a is a sleep-loss marker,26556
+Sgk1,Glucocorticoid-induced kinase (stress hormone response),20393
+Fkbp5,Glucocorticoid-responsive gene,14229
+Hspa5,ER chaperone (BiP); unfolded-protein response,14828
+Per1,Clock gene,18626
+Per2,Clock gene,18627
+Dbp,Clock-controlled transcription factor,13170
+Cirbp,Cold-inducible RNA-binding protein; falls with sleep loss,12696
+Rbm3,Cold-inducible RNA-binding protein,19652
+Shank3,The mutated gene (exon 21 deleted in the mutants),58234
+Gapdh,Housekeeping gene (should not change),14433

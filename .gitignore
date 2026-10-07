@@ -1,0 +1,5 @@
+data_raw/
+site/
+__marimo__/
+__pycache__/
+instructor_notes.md

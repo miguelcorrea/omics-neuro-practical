@@ -1,0 +1,6 @@
+Built 2026-10-07 by prepare_data.py
+Counts: GEO GSE113754 (Ingiosi et al. 2019 eLife 8:e42819)
+Gene symbols: NCBI Mus_musculus.gene_info (downloaded 2026-10-07)
+GO sets: g:Profiler e114_eg62_p19_27110d83 (Ensembl 114; GO annotations: BioMart; classes: releases/2026-01-23); ontology namespaces from go-basic.obo
+Expression filter: CPM>1.0 in >=5 samples; GO term size 5-2000
+DE: PyDESeq2 0.5.4, designs ~group and ~day + group
